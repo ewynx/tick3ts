@@ -30,10 +30,10 @@ export class TieredTicketDistributor extends RuntimeModule {
     await this.validCodes.set(code, Bool(true));
   }
 
-  // TODO is this needed? Can this be done differently?
+  // This can also be done with config settings, but in this way there is a reset
   // Initialize method to set initial values
   @runtimeMethod()
-  public async initializeState(): Promise<void> {
+  public async resetCounters(): Promise<void> {
     await this.topTierCounter.set(UInt64.zero);
     await this.standardTierCounter.set(UInt64.zero);
   }
@@ -48,6 +48,10 @@ export class TieredTicketDistributor extends RuntimeModule {
   // USER
 
   // STANDARD TIER
+
+  // Register `address` for Standard Tier
+  // this can be a different address than signer
+  // Will only go through if the code is valid and hasn't been used
   @runtimeMethod()
   public async registerStandardTier(
     code: Field,

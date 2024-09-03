@@ -1,0 +1,120 @@
+import { TestingAppChain } from "@proto-kit/sdk";
+import { Field, method, PrivateKey } from "o1js";
+import { Balances } from "../../../src/runtime/modules/balances";
+import { TieredTicketDistributor } from "../../../src/runtime/modules/tieredTicketDistributor";
+import { log } from "@proto-kit/common";
+import { BalancesKey, TokenId, UInt64 } from "@proto-kit/library";
+
+describe("TieredTicketDistributor", () => {
+  let appChain = TestingAppChain.fromRuntime({
+    TieredTicketDistributor,
+    Balances,
+  });
+  let alicePrivateKey = PrivateKey.random();
+  let alice = alicePrivateKey.toPublicKey();
+
+  beforeAll(async () => {
+    appChain = TestingAppChain.fromRuntime({
+      TieredTicketDistributor,
+      Balances,
+    });
+
+    appChain.configurePartial({
+      Runtime: {
+        Balances: {
+          totalSupply: UInt64.from(10000),
+        },
+        TieredTicketDistributor: {}
+      },
+    });
+
+    await appChain.start();
+    alicePrivateKey = PrivateKey.random();
+    alice = alicePrivateKey.toPublicKey();
+
+    appChain.setSigner(alicePrivateKey);
+
+  })
+
+  it("resetCounters should initialize counters to 0", async () => {
+    const balances = appChain.runtime.resolve("Balances");
+    const ticketDistributor = appChain.runtime.resolve("TieredTicketDistributor");
+
+    const tx1 = await appChain.transaction(alice, async () => {
+      await ticketDistributor.resetCounters();
+    });
+
+    await tx1.sign();
+    await tx1.send();
+
+    const block = await appChain.produceBlock();
+    const standardTierCounter = await appChain.query.runtime.TieredTicketDistributor.standardTierCounter.get();
+    const topTierCounter = await appChain.query.runtime.TieredTicketDistributor.topTierCounter.get();
+
+    expect(block?.transactions[0].status.toBoolean()).toBe(true);
+    expect(standardTierCounter?.toBigInt()).toBe(0n);
+    expect(topTierCounter?.toBigInt()).toBe(0n);
+  }, 1_000_000);
+
+  it("addCodes should add a code to validCodes", async () => {
+    const balances = appChain.runtime.resolve("Balances");
+    const ticketDistributor = appChain.runtime.resolve("TieredTicketDistributor");
+    const code = Field.from(11);
+
+    const tx1 = await appChain.transaction(alice, async () => {
+      await ticketDistributor.addCodes(code);
+    });
+
+    await tx1.sign();
+    await tx1.send();
+
+    const block = await appChain.produceBlock();
+    const validCode = await appChain.query.runtime.TieredTicketDistributor.validCodes.get(code);
+    const invalidCode = await appChain.query.runtime.TieredTicketDistributor.validCodes.get(code.add(1));
+
+    expect(block?.transactions[0].status.toBoolean()).toBe(true);
+    expect(validCode?.toBoolean()).toBe(true);
+    // Extra check for a code that wasnt added
+    expect(invalidCode).toBeUndefined();
+  }, 1_000_000);
+
+
+  it("registerStandardTier should register correctly with a valid code", async () => {
+    const balances = appChain.runtime.resolve("Balances");
+    const ticketDistributor = appChain.runtime.resolve("TieredTicketDistributor");
+    const validCode = Field.from(11);
+    const invalidCode = Field.from(133);
+
+    // Register valid code
+    const tx1 = await appChain.transaction(alice, async () => {
+      await ticketDistributor.addCodes(validCode);
+    });
+
+    await tx1.sign();
+    await tx1.send();
+    await appChain.produceBlock();
+
+    let annaPrivKey = PrivateKey.random();
+    // Register for the standard tier for anna
+    const tx2 = await appChain.transaction(alice, async () => {
+      await ticketDistributor.registerStandardTier(validCode, annaPrivKey.toPublicKey());
+    });
+
+    await tx2.sign();
+    await tx2.send();
+
+    await appChain.produceBlock();
+    // Retrieve first registration (should be for "me")
+    const standardTierRegistrations = await appChain.query.runtime.TieredTicketDistributor.standardTierRegistrations.get(UInt64.from(1));
+    const standardTierCounter = await appChain.query.runtime.TieredTicketDistributor.standardTierCounter.get();
+    const topTierCounter = await appChain.query.runtime.TieredTicketDistributor.topTierCounter.get();
+
+    // Check the first registration in Standard tier is for anna
+    expect(standardTierRegistrations?.toJSON()).toBe(annaPrivKey.toPublicKey().toJSON());
+    // Counter for this tier should be 1
+    expect(standardTierCounter?.toBigInt()).toBe(1n);
+    // Counter for top tier should still be 0
+    expect(topTierCounter?.toBigInt()).toBe(0n);
+
+  }, 1_000_000);
+});
