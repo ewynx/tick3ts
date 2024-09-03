@@ -10,7 +10,7 @@ import { Chain } from "./chain";
 import { Separator } from "./ui/separator";
 import { useState } from "react";
 import { AdminPanel } from "./adminPanel";
-import { addCode, initDistributor } from "@/lib/stores/ticketDistributor"; // Import hooks
+import { addCode, resetCountersDistributor } from "@/lib/stores/ticketDistributor"; // Import hooks
 
 export interface HeaderProps {
   loading: boolean;
@@ -30,7 +30,7 @@ export default function Header({
   blockHeight,
 }: HeaderProps) {
   const [showAdmin, setShowAdmin] = useState(false);
-  const initializeState = initDistributor(); // Hook to initialize state
+  const resetCounters = resetCountersDistributor(); // Hook to initialize state
   const onAddCode = addCode(); // Correct usage of the hook
 
   return (
@@ -74,7 +74,7 @@ export default function Header({
       {showAdmin && (
         <AdminPanel
           onAddCodes={onAddCode} // Pass the function directly
-          onInitializeState={initializeState} // Pass the function to initialize state
+          onResetCounters={resetCounters} // Pass the function to initialize state
         />
       )}
     </div>

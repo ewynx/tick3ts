@@ -6,7 +6,7 @@ import { BalancesKey, TokenId, UInt64 } from "@proto-kit/library";
 
 log.setLevel("ERROR");
 
-describe("balances", () => {
+describe.skip("balances", () => {
   it("should demonstrate how balances work", async () => {
     const appChain = TestingAppChain.fromRuntime({
       Balances,

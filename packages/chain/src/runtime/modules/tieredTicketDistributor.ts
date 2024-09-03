@@ -61,19 +61,22 @@ export class TieredTicketDistributor extends RuntimeModule {
       code
     );
 
-    assert(isCodeUsed.value, "Code has already been used");
+    assert(isCodeUsed.value, "Code is invalid or has already been used");
 
     // Check if Standard Tier still has room
     // There are max 1000 participants
     const standardTierCounter = await this.standardTierCounter.get();
     assert(standardTierCounter.value.lessThan(UInt64.from(1000)), "Standard Tier is full at the moment")
 
+
+    // All checks OK; make registration for user + make code invalid
     const newCounter = standardTierCounter.value.add(1);
     await this.standardTierCounter.set(newCounter);
 
     // Register this participant
     // TODO a participant can transfer their registrations
     await this.standardTierRegistrations.set(newCounter, address);
+    await this.validCodes.set(code, Bool(false));
   }
 
   // TOP TIER

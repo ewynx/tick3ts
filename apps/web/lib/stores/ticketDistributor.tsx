@@ -10,7 +10,7 @@ import { PendingTransaction, UnsignedTransaction } from "@proto-kit/sequencer";
 
 export interface TicketDistributorState {
   loading: boolean;
-  initializeState: (client: Client, walletAddress: string) => Promise<PendingTransaction>;
+  resetCounters: (client: Client, walletAddress: string) => Promise<PendingTransaction>;
   addCode: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
   registerStandardTier: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
 }
@@ -27,12 +27,12 @@ export const useTicketDistributorStore = create<
 >(
   immer((set) => ({
     loading: false,
-    async initializeState(client: Client, address: string) {
+    async resetCounters(client: Client, address: string) {
       const distributorModule = client.runtime.resolve("TieredTicketDistributor");
       const sender = PublicKey.fromBase58(address);
 
       const tx = await client.transaction(sender, async () => {
-        await distributorModule.initializeState();
+        await distributorModule.resetCounters();
       });
 
       await tx.sign();
@@ -74,7 +74,7 @@ export const useTicketDistributorStore = create<
   }))
 );
 
-export const initDistributor = () => {
+export const resetCountersDistributor = () => {
   const client = useClientStore();
   const wallet = useWalletStore();
   const distributor = useTicketDistributorStore();
@@ -82,7 +82,7 @@ export const initDistributor = () => {
   return useCallback(async () => {
     if (!client.client || !wallet.wallet) return;
 
-    const pendingTransaction = await distributor.initializeState(
+    const pendingTransaction = await distributor.resetCounters(
       client.client,
       wallet.wallet,
     );

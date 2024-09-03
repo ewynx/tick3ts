@@ -1,20 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Adjusted import path for consistency
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 interface AdminPanelProps {
   onAddCodes: (code: string) => void;
-  onInitializeState: () => void;
+  onResetCounters: () => void;
 }
 
-export function AdminPanel({ onAddCodes, onInitializeState }: AdminPanelProps) {
+// TODO show contract state for clarity
+
+export function AdminPanel({ onAddCodes, onResetCounters }: AdminPanelProps) {
   const [newCode, setNewCode] = useState("");
 
   const handleAddCode = () => {
     if (newCode.trim() !== "") {
       onAddCodes(newCode);
-      setNewCode(""); // Clear the input after adding code
-    }
+      setNewCode("");
   };
 
   return (
@@ -32,8 +33,8 @@ export function AdminPanel({ onAddCodes, onInitializeState }: AdminPanelProps) {
         </Button>
       </div>
       <div>
-        <Button onClick={onInitializeState} className="mt-2">
-          Initialize State
+        <Button onClick={onResetCounters} className="mt-2">
+          Reset counters
         </Button>
       </div>
     </div>
