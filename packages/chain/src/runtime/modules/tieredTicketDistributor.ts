@@ -57,7 +57,7 @@ export class TieredTicketDistributor extends RuntimeModule {
       code
     );
 
-    assert(isCodeUsed.value.not(), "Code has already been used");
+    assert(isCodeUsed.value, "Code has already been used");
 
     // Check if Standard Tier still has room
     // There are max 1000 participants

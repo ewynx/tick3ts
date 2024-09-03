@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
-import { useWalletStore } from "@/lib/stores/wallet";
 import { useState } from "react";
 
 export interface TicketDashboardProps {
@@ -22,6 +21,13 @@ export function TicketDashboard({
 }: TicketDashboardProps) {
   const form = useForm();
   const [code, setCode] = useState("");
+
+  const handleRegisterStandardTier = () => {
+    if (code.trim() !== "") {
+      onRegisterStandardTier(code);
+      setCode(""); // Clear the input after adding code
+    }
+  };
 
   return (
     <Card className="w-full p-4">
@@ -57,7 +63,7 @@ export function TicketDashboard({
           loading={loading}
           onClick={() => {
             if (wallet) {
-              onRegisterStandardTier(code);
+              handleRegisterStandardTier();
             } else {
               onConnectWallet();
             }
