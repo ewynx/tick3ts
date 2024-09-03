@@ -1,3 +1,5 @@
+// components/Header.tsx
+
 import { Button } from "@/components/ui/button";
 import protokit from "@/public/protokit-zinc.svg";
 import Image from "next/image";
@@ -6,6 +8,9 @@ import truncateMiddle from "truncate-middle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Chain } from "./chain";
 import { Separator } from "./ui/separator";
+import { useState } from "react";
+import { AdminPanel } from "./adminPanel";
+import { addCode, initDistributor } from "@/lib/stores/ticketDistributor"; // Import hooks
 
 export interface HeaderProps {
   loading: boolean;
@@ -24,6 +29,10 @@ export default function Header({
   balanceLoading,
   blockHeight,
 }: HeaderProps) {
+  const [showAdmin, setShowAdmin] = useState(false);
+  const initializeState = initDistributor(); // Hook to initialize state
+  const onAddCode = addCode(); // Correct usage of the hook
+
   return (
     <div className="flex items-center justify-between border-b p-2 shadow-sm">
       <div className="container flex">
@@ -56,8 +65,18 @@ export default function Header({
               {wallet ? truncateMiddle(wallet, 7, 7, "...") : "Connect wallet"}
             </div>
           </Button>
+          {/* Admin Button */}
+          <Button className="ml-4" onClick={() => setShowAdmin(!showAdmin)}>
+            Admin
+          </Button>
         </div>
       </div>
+      {showAdmin && (
+        <AdminPanel
+          onAddCodes={onAddCode} // Pass the function directly
+          onInitializeState={initializeState} // Pass the function to initialize state
+        />
+      )}
     </div>
   );
 }

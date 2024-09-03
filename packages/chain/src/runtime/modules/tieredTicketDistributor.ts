@@ -1,9 +1,11 @@
 import { UInt64 } from "@proto-kit/library";
 import { runtimeModule, state, runtimeMethod, RuntimeModule } from "@proto-kit/module";
 import { assert, State, StateMap } from "@proto-kit/protocol";
-import { Bool, Bytes, Field, PublicKey } from "o1js";
+import { Bool, Bytes, Field, Provable, PublicKey, Struct, UInt8 } from "o1js";
 
-export class ChosenRegistrations extends Bytes(200) {}
+export class ChosenRegistrations extends Struct ({
+  bytes: Provable.Array(UInt8, 200)
+}) {}
 
 @runtimeModule()
 export class TieredTicketDistributor extends RuntimeModule {
