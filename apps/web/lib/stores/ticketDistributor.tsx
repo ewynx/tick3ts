@@ -4,15 +4,19 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { Client, useClientStore } from "./client";
 import { useWalletStore } from "./wallet";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Field, PublicKey } from "o1js";
 import { PendingTransaction, UnsignedTransaction } from "@proto-kit/sequencer";
 
 export interface TicketDistributorState {
   loading: boolean;
+  standardTierCounter: string;
+  topTierCounter: string;
   resetCounters: (client: Client, walletAddress: string) => Promise<PendingTransaction>;
   addCode: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
   registerStandardTier: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
+  registerTopTier: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
+  loadDistributorState: (client: Client) => Promise<void>;
 }
 
 function isPendingTransaction(
@@ -27,6 +31,8 @@ export const useTicketDistributorStore = create<
 >(
   immer((set) => ({
     loading: false,
+    standardTierCounter: "0",
+    topTierCounter: "0",
     async resetCounters(client: Client, address: string) {
       const distributorModule = client.runtime.resolve("TieredTicketDistributor");
       const sender = PublicKey.fromBase58(address);
@@ -70,7 +76,34 @@ export const useTicketDistributorStore = create<
 
       isPendingTransaction(tx.transaction);
       return tx.transaction;
-    }
+    },
+    async registerTopTier(client: Client, address: string, code: string) {
+      const distributorModule = client.runtime.resolve("TieredTicketDistributor");
+      const sender = PublicKey.fromBase58(address);
+      const codeField = Field.from(code); // TODO error handling
+
+      const tx = await client.transaction(sender, async () => {
+        await distributorModule.registerTopTier(codeField, sender);
+      });
+
+      await tx.sign();
+      await tx.send();
+
+      isPendingTransaction(tx.transaction);
+      return tx.transaction;
+    },
+    async loadDistributorState(client: Client) {
+      set((state) => {
+        state.loading = true;
+      });
+
+      const counter = await client.query.runtime.TieredTicketDistributor.standardTierCounter.get();
+
+      set((state) => {
+        state.loading = false;
+        state.standardTierCounter = counter?.toString() ?? "0";
+      });
+    },
   }))
 );
 
@@ -109,7 +142,7 @@ export const addCode = () => {
   }, [client.client, wallet.wallet]);
 }
 
-export const useRegisterForTicket = () => {
+export const useRegisterStandardTicket = () => {
   const client = useClientStore();
   const wallet = useWalletStore();
   const distributor = useTicketDistributorStore();
@@ -125,4 +158,43 @@ export const useRegisterForTicket = () => {
 
     wallet.addPendingTransaction(pendingTransaction);
   }, [client.client, wallet.wallet]);
+}
+
+export const useRegisterTopTicket = () => {
+  const client = useClientStore();
+  const wallet = useWalletStore();
+  const distributor = useTicketDistributorStore();
+
+  return useCallback(async (code: string) => {
+    if (!client.client || !wallet.wallet) return;
+
+    const pendingTransaction = await distributor.registerTopTier(
+      client.client,
+      wallet.wallet,
+      code
+    );
+
+    wallet.addPendingTransaction(pendingTransaction);
+  }, [client.client, wallet.wallet]);
+}
+
+export const useObserveDistributorState = () => {
+  const client = useClientStore();
+  const wallet = useWalletStore();
+  const distributor = useTicketDistributorStore();
+  
+  useEffect(() => {
+    if (!client.client || !wallet.wallet) return;
+
+    distributor.loadDistributorState(client.client);
+  }, [client.client, wallet.wallet]);
+};
+
+// New Hook to access standardTierCounter
+export const useStandardTierCounter = () => {
+  return useTicketDistributorStore((state) => state.standardTierCounter);
+};
+
+export const useTopTierCounter = () => {
+  return useTicketDistributorStore((state) => state.topTierCounter);
 }

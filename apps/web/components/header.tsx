@@ -10,7 +10,12 @@ import { Chain } from "./chain";
 import { Separator } from "./ui/separator";
 import { useState } from "react";
 import { AdminPanel } from "./adminPanel";
-import { addCode, resetCountersDistributor } from "@/lib/stores/ticketDistributor"; // Import hooks
+import { Modal } from "./adminModal"; // Import the Modal component
+import { addCode, 
+  resetCountersDistributor, 
+  useRegisterForTicket, 
+  useStandardTierCounter,
+  useTopTierCounter } from "@/lib/stores/ticketDistributor"; // Import hooks
 
 export interface HeaderProps {
   loading: boolean;
@@ -30,8 +35,10 @@ export default function Header({
   blockHeight,
 }: HeaderProps) {
   const [showAdmin, setShowAdmin] = useState(false);
-  const resetCounters = resetCountersDistributor(); // Hook to initialize state
-  const onAddCode = addCode(); // Correct usage of the hook
+  const resetCounters = resetCountersDistributor();
+  const onAddCode = addCode(); 
+  const standardTierCounter = useStandardTierCounter();
+  const topTierCounter = useTopTierCounter();
 
   return (
     <div className="flex items-center justify-between border-b p-2 shadow-sm">
@@ -66,17 +73,20 @@ export default function Header({
             </div>
           </Button>
           {/* Admin Button */}
-          <Button className="ml-4" onClick={() => setShowAdmin(!showAdmin)}>
+          <Button className="ml-4" onClick={() => setShowAdmin(true)}>
             Admin
           </Button>
         </div>
       </div>
-      {showAdmin && (
+
+      {/* Admin Panel Modal */}
+      <Modal isOpen={showAdmin} onClose={() => setShowAdmin(false)} title="Admin Panel">
         <AdminPanel
           onAddCodes={onAddCode} // Pass the function directly
-          onResetCounters={resetCounters} // Pass the function to initialize state
+          onResetCounters={resetCounters} // Pass the function to reset counters
+          standardTierCounter={standardTierCounter}
         />
-      )}
+      </Modal>
     </div>
   );
 }
