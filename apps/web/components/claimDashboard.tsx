@@ -43,7 +43,7 @@ export function TicketDashboard({
       <div className="mb-6">
         <h2 className="text-2xl font-bold">Concert Tickets</h2>
         <p className="mt-2 text-sm text-zinc-500">
-          Choose your tier to register for a concert ticket. Successful registrants receive a Ticket Claim Token (NFT).
+          Choose your tier to register for a concert ticket. <b>Successful registrants receive a Ticket Claim Token (NFT).</b>
         </p>
       </div>
 

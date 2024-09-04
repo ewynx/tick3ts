@@ -13,7 +13,6 @@ import { AdminPanel } from "./adminPanel";
 import { Modal } from "./adminModal"; // Import the Modal component
 import { addCode, 
   resetCountersDistributor, 
-  useRegisterForTicket, 
   useStandardTierCounter,
   useTopTierCounter } from "@/lib/stores/ticketDistributor"; // Import hooks
 
@@ -85,6 +84,7 @@ export default function Header({
           onAddCodes={onAddCode} // Pass the function directly
           onResetCounters={resetCounters} // Pass the function to reset counters
           standardTierCounter={standardTierCounter}
+          topTierCounter={topTierCounter}
         />
       </Modal>
     </div>
