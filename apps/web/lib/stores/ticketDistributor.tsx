@@ -5,7 +5,7 @@ import { immer } from "zustand/middleware/immer";
 import { Client, useClientStore } from "./client";
 import { useWalletStore } from "./wallet";
 import { useCallback, useEffect } from "react";
-import { Field, PublicKey } from "o1js";
+import { Field, Provable, PublicKey, UInt8 } from "o1js";
 import { PendingTransaction, UnsignedTransaction } from "@proto-kit/sequencer";
 
 export interface TicketDistributorState {
@@ -17,6 +17,7 @@ export interface TicketDistributorState {
   registerStandardTier: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
   registerTopTier: (client: Client, walletAddress: string, code: string) => Promise<PendingTransaction>;
   loadDistributorState: (client: Client) => Promise<void>;
+  distributeTopTicketClaims: (client: Client, walletAddress: string, luckyNumber: number) => Promise<PendingTransaction>;
 }
 
 function isPendingTransaction(
@@ -104,6 +105,20 @@ export const useTicketDistributorStore = create<
         state.standardTierCounter = counter?.toString() ?? "0";
       });
     },
+    async distributeTopTicketClaims(client: Client, address: string, luckyNumber: number) {
+      const distributorModule = client.runtime.resolve("TieredTicketDistributor");
+      const sender = PublicKey.fromBase58(address);
+      
+      const tx = await client.transaction(sender, async () => {
+        await distributorModule.distributeTopTicketClaims(UInt8.from(luckyNumber));
+      });
+
+      await tx.sign();
+      await tx.send();
+
+      isPendingTransaction(tx.transaction);
+      return tx.transaction;
+    }
   }))
 );
 
@@ -197,4 +212,22 @@ export const useStandardTierCounter = () => {
 
 export const useTopTierCounter = () => {
   return useTicketDistributorStore((state) => state.topTierCounter);
+}
+
+export const useDrawTopTier = () => {
+  const client = useClientStore();
+  const wallet = useWalletStore();
+  const distributor = useTicketDistributorStore();
+
+  return useCallback(async (luckyNumber: number) => {
+    if (!client.client || !wallet.wallet) return;
+
+    const pendingTransaction = await distributor.distributeTopTicketClaims(
+      client.client,
+      wallet.wallet,
+      luckyNumber
+    );
+
+    wallet.addPendingTransaction(pendingTransaction);
+  }, [client.client, wallet.wallet]);
 }

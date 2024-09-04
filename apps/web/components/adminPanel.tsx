@@ -8,11 +8,13 @@ import { FaTicketAlt, FaStar } from "react-icons/fa";
 interface AdminPanelProps {
   onAddCodes: (code: string) => void;
   onResetCounters: () => void;
+  onDrawTopTier: (nr: number) => Promise<void>;
 }
 
 export function AdminPanel({
   onAddCodes,
   onResetCounters,
+  onDrawTopTier,
 }: AdminPanelProps) {
   const [newCode, setNewCode] = useState("");
   const [showDrawSection, setShowDrawSection] = useState(false);
@@ -26,6 +28,10 @@ export function AdminPanel({
       setNewCode("");
     }
   };
+
+  const distributeTopTicketClaims = () => {
+    onDrawTopTier(topNumbers[0]);
+  }
 
   const drawDistinctNumbers = (max: number, count: number) => {
     const numbers = new Set<number>();
@@ -49,22 +55,17 @@ export function AdminPanel({
     console.log("Distributing standard tier ticket claims:", standardNumbers);
   };
 
-  const distributeTopTicketClaims = () => {
-    console.log("Distributing top tier ticket claims:", topNumbers);
-  };
-
   return (
     <Card className="w-full p-8">
       <div className="mb-6">
-        {/* <h2 className="text-2xl font-bold">Admin Panel</h2> */}
         <p className="mt-2 text-sm text-zinc-500">
           Manage ticket distribution for your event!
         </p>
       </div>
 
       {/* Reset Counters Section */}
-      <Button 
-        onClick={onResetCounters} 
+      <Button
+        onClick={onResetCounters}
         className="bg-gray-300 text-black hover:bg-gray-400 mb-6"
       >
         Set counters to 0
@@ -108,7 +109,9 @@ export function AdminPanel({
             >
               <FaTicketAlt className="text-blue-500 text-3xl mb-2" />
               <h3 className="text-lg font-bold">Standard Tier</h3>
-              <p className="text-sm text-zinc-500">Standard distribution, 5 unique numbers between 0..24</p>
+              <p className="text-sm text-zinc-500">
+                Standard distribution, 5 unique numbers between 0..24
+              </p>
             </div>
 
             {/* Top Tier Card */}
@@ -120,7 +123,9 @@ export function AdminPanel({
             >
               <FaStar className="text-yellow-500 text-3xl mb-2" />
               <h3 className="text-lg font-bold">Top Tier</h3>
-              <p className="text-sm text-zinc-500">Top distribution, draw a single number between 0 and 1</p>
+              <p className="text-sm text-zinc-500">
+                Top distribution, draw a single number between 0 and 1
+              </p>
             </div>
           </div>
 
@@ -138,7 +143,7 @@ export function AdminPanel({
                 onClick={distributeStandardTicketClaims}
                 className="bg-gray-300 text-black hover:bg-gray-400 mt-2"
               >
-                Distribute Standard Tickets
+                Distribute Standard Claim Tokens
               </Button>
             </div>
           )}
@@ -156,7 +161,7 @@ export function AdminPanel({
                 onClick={distributeTopTicketClaims}
                 className="bg-gray-300 text-black hover:bg-gray-400 mt-2"
               >
-                Distribute Top Ticket
+                Distribute Top Claim Token
               </Button>
             </div>
           )}

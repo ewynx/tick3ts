@@ -12,7 +12,8 @@ import { Modal } from "./adminModal";
 import { addCode, 
   resetCountersDistributor, 
   useStandardTierCounter,
-  useTopTierCounter } from "@/lib/stores/ticketDistributor";
+  useTopTierCounter,
+  useDrawTopTier } from "@/lib/stores/ticketDistributor";
 
 export interface HeaderProps {
   loading: boolean;
@@ -36,6 +37,8 @@ export default function Header({
   const onAddCode = addCode(); 
   const standardTierCounter = useStandardTierCounter();
   const topTierCounter = useTopTierCounter();
+
+  const drawTopTier = useDrawTopTier();
 
   return (
     <div className="flex items-center justify-between border-b p-2 shadow-sm">
@@ -81,6 +84,7 @@ export default function Header({
         <AdminPanel
           onAddCodes={onAddCode}
           onResetCounters={resetCounters} 
+          onDrawTopTier={drawTopTier}
         />
       </Modal>
     </div>

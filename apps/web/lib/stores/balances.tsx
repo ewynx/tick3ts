@@ -25,7 +25,8 @@ function isPendingTransaction(
     throw new Error("Transaction is not a PendingTransaction");
 }
 
-export const tokenId = TokenId.from(0);
+// For testing purpose this will be the token id of a top tier ticket claim token
+export const tokenId = TokenId.from(101);
 
 export const useBalancesStore = create<
   BalancesState,

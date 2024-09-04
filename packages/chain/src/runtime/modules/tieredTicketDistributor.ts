@@ -8,6 +8,10 @@ export class ChosenRegistrations extends Struct ({
   bytes: Provable.Array(UInt8, 5)
 }) {}
 
+export class ChosenTopTierRegistrations extends Struct ({
+  bytes: Provable.Array(UInt8, 1)
+}) {}
+
 export class Codes extends Struct ({
   // 25 + 10 registrations for the 2 tiers
   fields: Provable.Array(Field, 35)
@@ -32,6 +36,10 @@ export class TieredTicketDistributor extends RuntimeModule {
   // Ticket Claim Tokens
   @state() public claimTokenCount = State.from<Field>(Field);
   @state() public claimTokenOwners = StateMap.from<TokenId, PublicKey>(TokenId, PublicKey);
+  // Ticket Claim Tokens Top Tier
+  @state() public claimTokenCountTopTier = State.from<Field>(Field);
+  @state() public claimTokenOwnersTopTier = StateMap.from<TokenId, PublicKey>(TokenId, PublicKey);
+
 
   //////// ADMIN ////////
   // TODO add permissions for all functions in this section
@@ -48,18 +56,17 @@ export class TieredTicketDistributor extends RuntimeModule {
     }
   }
 
-  // This can also be done with config settings, but in this way there is a reset
   // Initialize method to set initial values
+  // TODO split this up because the token counters should only be set at the beginning
+  // whereas the other counters might be reset after each draw?
   @runtimeMethod()
   public async resetCounters(): Promise<void> {
     await this.topTierCounter.set(UInt8.from(0));
     await this.standardTierCounter.set(UInt8.from(0));
-  }
 
-  // TODO can this be done differently?
-  @runtimeMethod()
-  public async initTokenCount(): Promise<void> {
     await this.claimTokenCount.set(Field.from(0));
+    // Start top tier token id at 100
+    await this.claimTokenCountTopTier.set(Field.from(100));
   }
 
   constructor(@inject("Balances") public balances: Balances) {
@@ -91,6 +98,24 @@ export class TieredTicketDistributor extends RuntimeModule {
   
       Provable.log("minted");
     }
+  }
+
+  @runtimeMethod()
+  public async distributeTopTicketClaims(luckyIndex: UInt8): Promise<void> {
+    // For demo purposes this is just 1 draw
+    const chosenRegistration = await this.topTierRegistrations.get(luckyIndex);
+
+    // Mint Ticket Claim Token for the lucky one
+    const currentTokenCount = await this.claimTokenCountTopTier.get();
+    // Top tier TokenId starts at 101
+    const newValue = currentTokenCount.value.add(1);
+    const newTokenId = TokenId.from(newValue);
+    await this.claimTokenCountTopTier.set(newValue);
+    // Mint Ticket Claim Token for the lucky registrant
+    await this.balances.mint(newTokenId, chosenRegistration.value, Balance.from(1));
+    await this.claimTokenOwnersTopTier.set(newTokenId, chosenRegistration.value);
+
+    Provable.log("minted top tier");
   }
 
   //////// USER ////////
