@@ -1,7 +1,5 @@
-// components/Header.tsx
-
 import { Button } from "@/components/ui/button";
-import protokit from "@/public/protokit-zinc.svg";
+import tickets from "@/public/Tick3ts.png";
 import Image from "next/image";
 // @ts-ignore
 import truncateMiddle from "truncate-middle";
@@ -10,11 +8,11 @@ import { Chain } from "./chain";
 import { Separator } from "./ui/separator";
 import { useState } from "react";
 import { AdminPanel } from "./adminPanel";
-import { Modal } from "./adminModal"; // Import the Modal component
+import { Modal } from "./adminModal";
 import { addCode, 
   resetCountersDistributor, 
   useStandardTierCounter,
-  useTopTierCounter } from "@/lib/stores/ticketDistributor"; // Import hooks
+  useTopTierCounter } from "@/lib/stores/ticketDistributor";
 
 export interface HeaderProps {
   loading: boolean;
@@ -43,24 +41,24 @@ export default function Header({
     <div className="flex items-center justify-between border-b p-2 shadow-sm">
       <div className="container flex">
         <div className="flex basis-6/12 items-center justify-start">
-          <Image className="h-8 w-8" src={protokit} alt={"Protokit logo"} />
-          <Separator className="mx-4 h-8" orientation={"vertical"} />
-          <div className="flex grow">
-            <Chain height={blockHeight} />
-          </div>
+          {/* Adjusted Image with max height and auto width for maintaining aspect ratio */}
+          <Image 
+            className="h-10 w-auto max-w-full" 
+            src={tickets} 
+            alt={"Tick3ts logo"} 
+            style={{ maxHeight: '50px', maxWidth: '200px' }}
+          />
         </div>
         <div className="flex basis-6/12 flex-row items-center justify-end">
           {/* balance */}
           {wallet && (
-            <div className="mr-4 flex shrink flex-col items-end justify-center">
-              <div>
-                <p className="text-xs">Your balance</p>
-              </div>
-              <div className="w-32 pt-0.5 text-right">
+            <div className="mr-4 flex shrink flex-col items-start justify-center bg-gray-100 p-2 rounded-md shadow-sm">
+              <div className="text-xs text-gray-600">Your balance:</div>
+              <div className="w-40 pt-0.5 text-left">
                 {balanceLoading && balance === undefined ? (
                   <Skeleton className="h-4 w-full" />
                 ) : (
-                  <p className="text-xs font-bold">{balance} MINA</p>
+                  <p className="text-xs font-bold text-black">{balance} Tick3t Claim Tokens</p>
                 )}
               </div>
             </div>
@@ -81,10 +79,8 @@ export default function Header({
       {/* Admin Panel Modal */}
       <Modal isOpen={showAdmin} onClose={() => setShowAdmin(false)} title="Admin Panel">
         <AdminPanel
-          onAddCodes={onAddCode} // Pass the function directly
-          onResetCounters={resetCounters} // Pass the function to reset counters
-          standardTierCounter={standardTierCounter}
-          topTierCounter={topTierCounter}
+          onAddCodes={onAddCode}
+          onResetCounters={resetCounters} 
         />
       </Modal>
     </div>

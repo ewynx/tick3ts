@@ -23,7 +23,7 @@ export class TieredTicketDistributor extends RuntimeModule {
   @state() public standardTierCounter = State.from<UInt8>(UInt8);
   
   // TopTierPool: 150% standard price, 50% chance
-  // 5 tx, max 10 registrations
+  // 1 tx, max 2 registrations
   @state() public topTierRegistrations = StateMap.from<UInt8, PublicKey>(UInt8, PublicKey);
   @state() public topTierCounter = State.from<UInt8>(UInt8);
 
@@ -143,9 +143,9 @@ export class TieredTicketDistributor extends RuntimeModule {
     assert(isCodeUsed.value, "Code is invalid or has already been used");
 
     // Check if Top Tier still has room
-    // There are max 10 participants
+    // There are max 2 participants
     const topTierCounter = await this.topTierCounter.get();
-    assert(topTierCounter.value.lessThan(UInt8.from(10)), "Top Tier is full")
+    assert(topTierCounter.value.lessThan(UInt8.from(2)), "Top Tier is full")
     // All checks OK; make registration for user + make code invalid
     // Register this participant
     await this.topTierRegistrations.set(topTierCounter.value, address);
