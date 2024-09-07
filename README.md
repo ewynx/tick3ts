@@ -4,7 +4,7 @@ Get concert tickets in a *much* better way.
 
 
 <p align="center">
-  <img src="./Tick3ts-slide.png" title="hover text">
+  <img src="https://github.com/ewynx/tick3ts/blob/main/Tick3ts-slide.png" title="hover text">
 </p>
 
 Stop queueing in line for hours or get beaten by bots that buy up all tickets. No more fake tickets. 
