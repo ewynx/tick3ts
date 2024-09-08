@@ -9,6 +9,8 @@ Get concert tickets in a *much* better way.
 
 Stop queueing in line for hours or get beaten by bots that buy up all tickets. No more fake tickets. 
 
+This project was created using the [Protokit starter template](https://github.com/proto-kit/starter-kit/tree/develop), uses [o1js](https://github.com/o1-labs/o1js/tree/main) and runs on the [Mina blockchain](https://docs.minaprotocol.com/). 
+
 ## How it works
 
 Sign up with your unique code to win a Tick3t Claim Token (TCT). With this token you'll be able to buy the concert ticket in peace.
